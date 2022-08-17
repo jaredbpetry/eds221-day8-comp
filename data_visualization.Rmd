@@ -112,3 +112,102 @@ liz_length_weight <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
 liz_length_weight
 ```
 
+## Fun with scales 
+
+```{r}
+liz_length_weight_2 <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = weight)) + 
+  scale_color_gradientn(colors = c("magenta", "green", "dodgerblue"))
+
+liz_length_weight_2
+```
+
+```{r}
+liz_length_weight_3 <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = weight)) + 
+    scale_color_steps2(low = "green", 
+                       mid = "yellow", 
+                       high = "red", 
+                       midpoint = 30, 
+                       breaks = c(5, 15, 25))
+
+liz_length_weight_3
+```
+
+```{r}
+liz_length_weight_4 <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = total_length)) + 
+  scale_color_stepsn(colors = c("orange", "red", "purple"), 
+                     breaks = seq(from = 0, to = 300, by = 60))
+
+liz_length_weight_4
+```
+
+horizontal boxplot y has common name and x has total_length with boxplot fill chnaging color based on the common name 
+```{r}
+lizards_median <- lizards |>  
+  mutate(common_name = fct_reorder(common_name, total_length, .fun = mean))
+
+lizard_box <- ggplot(data = lizards_median, 
+                    aes(y = common_name, 
+                        x = total_length)) + 
+  geom_boxplot(aes(fill = common_name), show.legend = FALSE) + 
+  scale_fill_paletteer_d(palette = "yarrr::usualsuspects") + 
+  theme_minimal()
+
+lizard_box
+```
+
+### everything example
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = weight)) +
+  theme(panel.grid.major.x  = element_line(color = "red"), 
+        panel.grid.major.y = element_line(color = "green"), 
+        axis.title.x = element_text(color = "purple"), 
+        axis.text.y = element_text(color = "orange"), 
+        text = element_text(size = 18), 
+        panel.background = element_rect(color = "yellow", fill = "pink")) + 
+  annotate("text", x = 300, y = 50, label = "YEWWW", color = "blue")
+```
+
+### Repulsive labels
+```{r}
+wws_lizards <- lizards |> 
+  filter(common_name == "western whiptail", site == "sand")
+
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point() +
+  geom_text_repel(aes(label = toe_num)) #automatic repulsion from the points so you can read the values
+```
+
+use ggrepel to label the points on a scatterplot 
+```{r}
+gapminder |>  
+  filter(year == 2002, continent == "Europe") |> 
+  ggplot(aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point() + 
+  geom_text_repel(aes(label = country), size = 3)
+```
+how to highlight and add a label to a point in the graph 
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point() + 
+  gghighlight(weight > 30, label_key = toe_num)
+```
+
+# Make a map 
+fuck yea!
+
+sf stands for simple features... way of storing spatial data and using it the same way you are using a dataframe
+read in a KML file... will store polygon as a list of lat/long info that would be like a connect the dot for that polygon
+
+```{r}
+jornada_veg <- read_sf(here::here("data_raw", "spatial_vegetation", "doc.kml"))
+
+ggplot() + 
+  geom_sf(data = jornada_veg, aes(fill = Name), color = NA) + 
+  theme_minimal() + 
+  scale_fill_paletteer_d(palette = "ggthemes::manyeys")
+```
+
