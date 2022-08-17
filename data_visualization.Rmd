@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(tidyverse) 
 library(here) 
 library(janitor) 
@@ -22,6 +22,8 @@ library(gapminder)
 library(sf)
 
 ```
+
+# Graphs
 
 Read in the data 
 ```{r}
@@ -58,6 +60,55 @@ map asthetics based on variables
 ggplot(data = lizards, aes(x = total_length, y = weight)) + 
   geom_point(aes(color = common_name,    #--- color is mapped based on common name
                  size = total_length,    #size of the dot is based on the total length 
-                 ))
+                 alpha = 0.4)) +
+  theme_minimal() +          #many different themes to choose from but you can also create your own 
+  facet_wrap(~common_name, scales = "free") #scales free means that the axis's on the faceted graphs will be differrent                                               based on the values in each 
+```
+
+find total counts of lizards using common name as grouping variable 
+```{r}
+lizards_totals <- lizards |> 
+  group_by(common_name) |> 
+  summarize(counts = n())
+
+##--- to do the exact same thing 
+#dplyr::count()
+lizard_counts <- lizards |> 
+  count(common_name)
+```
+
+Make a bar plot , column graph that plots this count thing we just created 
+
+```{r}
+ggplot(data = lizards_totals, aes(y = fct_reorder(common_name, counts), x = counts)) +
+  geom_col()
+```
+
+but the plot makes the common names in alphabetical order, but we would rather have the order based on the count variable 
+
+this is where factors come in handy 
+
+#factors 
+
+fct_reorder() within aes in gg plot .. specify (this variable, order based on this variable)
+within the farecats package 
+
+# more graphs 
+
+create scatterplots by species for total length vs weight
+color will differ based on species (common name) 
+change theme 
+make each faceted panel have flexible axis limits (scale is free)
+and then change whatever else you want
+
+```{r}
+liz_length_weight <- ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = common_name)) + 
+  theme_get() + 
+  facet_wrap(~common_name, scales = "free") + 
+  labs(title = "Really sick lizard graph", subtitle = "a smaller title", caption = "data liscensing", 
+       x= "lizard length", y= "lizard weight")
+
+liz_length_weight
 ```
 
